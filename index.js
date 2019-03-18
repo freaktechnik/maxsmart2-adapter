@@ -35,7 +35,7 @@ class Plug extends Device {
         this.name = desc.sn;
         this.udpDevice = desc;
         this.description = "Max Hauri maxSMART 2.0 clip-clap Switch WiFi";
-        this['@type'] = [ 'SmartPlug' ];
+        this['@type'] = [ 'SmartPlug', 'EnergyMonitor', 'OnOffSwitch' ];
 
         this.properties.set('on', new Property(this, 'on', {
             type: 'boolean',
