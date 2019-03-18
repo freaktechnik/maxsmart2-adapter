@@ -1,0 +1,81 @@
+{
+  "name": "maxsmart2-adapter",
+  "display_name": "Max Hauri maxSMART 2.0",
+  "version": "0.0.1",
+  "description": "Control Max Hauri Max Smart 2.0 smart plugs. Does not support automatic pairing.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "licenses": "./gather-licenses.js",
+    "build": "./build.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/freaktechnik/maxsmart2-adapter.git"
+  },
+  "keywords": [
+    "iot",
+    "mozilla-iot",
+    "max",
+    "hauri",
+    "smart"
+  ],
+  "author": "Martin Giger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/freaktechnik/maxsmart2-adapter/issues"
+  },
+  "homepage": "https://github.com/freaktechnik/maxsmart2-adapter#readme",
+  "dependencies": {
+    "mh-maxsmart2": "^1.0.0"
+  },
+  "devDependencies": {
+    "nlf": "^2.1.1"
+  },
+  "moziot": {
+    "api": {
+      "min": 2,
+      "max": 2
+    },
+    "plugin": true,
+    "exec": "{nodeLoader} {path}",
+    "config": {
+      "devices": []
+    },
+    "schema": {
+      "type": "object",
+      "required": [
+        "devices"
+      ],
+      "properties": {
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "sn",
+              "ip"
+            ],
+            "properties": {
+              "sn": {
+                "type": "string",
+                "description": "Serial number",
+                "pattern": "^[A-Z]{3}[0-9]+$"
+              },
+              "ip": {
+                "type": "string",
+                "description": "IPv4 address",
+                "pattern": "^(?:[0-9]+\\.){3}[0-9]+$"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "files": [
+    "index.js",
+    "SHA256SUMS",
+    "LICENSE"
+  ]
+}
