@@ -21,7 +21,6 @@ class ReadonlyProperty extends Property {
             this.setCachedValue(value);
             this.device.notifyPropertyChanged(this);
             if(this.value != this.prevSetValue) {
-                console.log('setValue for property', this.name, 'to', this.value, 'for', this.device.id);
                 this.prevSetValue = this.value;
             }
         }
@@ -35,6 +34,7 @@ class Plug extends Device {
         this.name = desc.sn;
         this.udpDevice = desc;
         this.description = "Max Hauri maxSMART 2.0 clip-clap Switch WiFi";
+        this.lastSuccesfulRequest = 0;
         this['@type'] = [ 'SmartPlug', 'EnergyMonitor', 'OnOffSwitch' ];
 
         this.properties.set('on', new Property(this, 'on', {
@@ -58,15 +58,33 @@ class Plug extends Device {
         this.update();
     }
 
-    udpSend(command, data = {}) {
-        return maxsmart.send(this.udpDevice.sn, this.udpDevice.ip, command, data).catch((e) => this.handleRequestError(e));
+    async udpSend(command, data = {}) {
+        const thisTime = Date.now();
+        try {
+            const res = await maxsmart.send(this.udpDevice.sn, this.udpDevice.ip, command, data, 10000);
+            this.lastSuccesfulRequest = thisTime;
+            return res;
+        }
+        catch (e) {
+            if(this.lastSuccesfulRequest <= thisTime) {
+                this.handleRequestError(e);
+            }
+            else {
+                console.error(e);
+            }
+        }
     }
 
-    async handleRequestError(e) {
+    handleRequestError(e) {
         if(e.code === 0) {
-            await this.adapter.removeThing(this);
+            if(this.destroyed) {
+                throw new Error("Device already gone");
+            }
+            this.adapter.removeThing(this);
+            this.destroyed = true;
             setTimeout(() => {
                 this.udpSend(maxsmart.CMD.GET_WATT).then(() => {
+                    this.destroyed = false;
                     this.adapter.addDevice(this.udpDevice);
                 }).catch(() => {
                     console.error("Lost connection to", this.sn);
@@ -132,10 +150,8 @@ class MaxSmartAdapter extends Adapter {
     }
 
     updateDevices() {
-        for(const device in this.devices) {
-            if(this.devices.hasOwnProperty(device)) {
-                this.devices[device].update();
-            }
+        for(const device of Object.values(this.devices)) {
+            device.update();
         }
     }
 }

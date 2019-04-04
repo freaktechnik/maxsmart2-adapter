@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/freaktechnik/maxsmart2-adapter#readme",
   "dependencies": {
-    "mh-maxsmart2": "^1.0.1"
+    "mh-maxsmart2": "^1.1.0"
   },
   "devDependencies": {
     "nlf": "^2.1.1"
