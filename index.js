@@ -59,18 +59,30 @@ class Plug extends Device {
     }
 
     udpSend(command, data = {}) {
-        return maxsmart.send(this.udpDevice.sn, this.udpDevice.ip, command, data);
+        return maxsmart.send(this.udpDevice.sn, this.udpDevice.ip, command, data).catch((e) => this.handleRequestError(e));
+    }
+
+    async handleRequestError(e) {
+        if(e.code === 0) {
+            await this.adapter.removeThing(this);
+            setTimeout(() => {
+                this.udpSend(maxsmart.CMD.GET_WATT).then(() => {
+                    this.adapter.addDevice(this.udpDevice);
+                }).catch(() => {
+                    console.error("Lost connection to", this.sn);
+                });
+            }, 60000);
+            throw e;
+        }
+        else {
+            console.error(e);
+        }
     }
 
     async update() {
-        try {
-            const res = await this.udpSend(maxsmart.CMD.GET_WATT);
-            this.findProperty('watt').setReadonly(res.watt);
-            this.findProperty('amp').setReadonly(res.amp);
-        }
-        catch(e) {
-            console.error(e);
-        }
+        const res = await this.udpSend(maxsmart.CMD.GET_WATT);
+        this.findProperty('watt').setReadonly(res.watt);
+        this.findProperty('amp').setReadonly(res.amp);
     }
 
     async notifyPropertyChanged(property) {
@@ -92,6 +104,10 @@ class MaxSmartAdapter extends Adapter {
     }
 
     addDevice(desc) {
+        if(desc.sn in this.devices) {
+            console.warn("Device already exists", desc.sn);
+            return;
+        }
         const device = new Plug(this, desc);
         if(!this.interval) {
             this.interval = setInterval(() => this.updateDevices(), 10000);
@@ -100,7 +116,6 @@ class MaxSmartAdapter extends Adapter {
     }
 
     handleDeviceRemoved(device) {
-        device.unload();
         super.handleDeviceRemoved(device);
         if(this.interval && !Object.keys(this.devices).length) {
             clearInterval(this.interval);
