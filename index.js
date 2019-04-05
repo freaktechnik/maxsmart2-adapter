@@ -46,13 +46,17 @@ class Plug extends Device {
             type: 'number',
             '@type': 'InstantaneousPowerProperty',
             unit: 'watt',
-            label: 'Power'
+            label: 'Power',
+            minimum: 0,
+            maximum: 2400
         }));
         this.properties.set('amp', new ReadonlyProperty(this, 'amp', {
             type: 'number',
             '@type': 'CurrentProperty',
             unit: 'ampere',
-            label: 'Current'
+            label: 'Current',
+            minimum: 0,
+            maximum: 10
         }));
 
         this.update();
