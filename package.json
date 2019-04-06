@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/freaktechnik/maxsmart2-adapter#readme",
   "dependencies": {
-    "mh-maxsmart2": "^1.2.0"
+    "mh-maxsmart2": "^1.2.1"
   },
   "devDependencies": {
     "nlf": "^2.1.1"
@@ -40,12 +40,18 @@
     "plugin": true,
     "exec": "{nodeLoader} {path}",
     "config": {
-      "devices": []
+      "devices": [],
+      "pairing": true,
+      "wifiInfo": {
+        "ssid": "",
+        "password": ""
+      }
     },
     "schema": {
       "type": "object",
       "required": [
-        "devices"
+        "devices",
+        "wifiInfo"
       ],
       "properties": {
         "devices": {
@@ -67,6 +73,29 @@
                 "description": "IPv4 address",
                 "pattern": "^(?:[0-9]+\\.){3}[0-9]+$"
               }
+            }
+          }
+        },
+        "pairing": {
+          "type": "boolean",
+          "title": "Enable WiFi pairing for plugs"
+        },
+        "wifiInfo": {
+          "type": "object",
+          "title": "WiFi configuration",
+          "description": "WiFi config sent to unpaired smart plugs. Readable to anyone, so only enable pairing when needed.",
+          "required": [
+            "ssid",
+            "password"
+          ],
+          "properties": {
+            "ssid": {
+              "type": "string",
+              "description": "WiFi SSID"
+            },
+            "password": {
+              "type": "string",
+              "description": "WiFi password"
             }
           }
         }

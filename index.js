@@ -3,8 +3,9 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-const {Adapter, Device, Property} = require('gateway-addon');
+const {Adapter, Device, Property, Database} = require('gateway-addon');
 const maxsmart = require("mh-maxsmart2");
+const easylink = require("mh-maxsmart2/easylink");
 
 class ReadonlyProperty extends Property {
     constructor(device, name, description) {
@@ -31,7 +32,7 @@ class ReadonlyProperty extends Property {
 class Plug extends Device {
     constructor(adapter, desc) {
         super(adapter, desc.sn);
-        this.name = desc.sn;
+        this.name = desc.name || desc.sn;
         this.udpDevice = desc;
         this.description = "Max Hauri maxSMART 2.0 clip-clap Switch WiFi";
         this.lastSuccesfulRequest = 0;
@@ -102,6 +103,7 @@ class Plug extends Device {
     }
 
     async update() {
+        //TODO broke power readings with the pairing stuff :(
         const res = await this.udpSend(maxsmart.CMD.GET_WATT);
         this.findProperty('watt').setReadonly(res.watt);
         this.findProperty('amp').setReadonly(res.amp);
@@ -119,6 +121,7 @@ class MaxSmartAdapter extends Adapter {
     constructor(addonManager, name, config) {
         super(addonManager, 'MaxSmart2Adapter', name);
         addonManager.addAdapter(this);
+        this.config = config;
 
         for(const device of config.devices) {
             this.addDevice(device);
@@ -158,8 +161,66 @@ class MaxSmartAdapter extends Adapter {
             device.update();
         }
     }
+
+    async addDeviceToDB(deviceInfo) {
+        const db = new Database(this.packageName);
+        await db.open();
+        this.config.devices.push({
+            sn: deviceInfo.sn,
+            ip: deviceInfo.ip
+        });
+        await db.saveConfig({
+            devices: this.config.devices,
+            pairing: this.config.pairing,
+            wifiInfo: this.config.wifiInfo
+        });
+    }
+
+    async startPairing() {
+        if(this.config.pairing && this.config.wifiInfo && this.config.wifiInfo.ssid && this.config.wifiInfo.password) {
+            await easylink.sendWifiInfo(this.config.wifiInfo.ssid, this.config.wifiInfo.password);
+            const deviceInfo = await maxsmart.discoverDevices();
+            if(!this.devices.hasOwnProperty(deviceInfo.sn)) {
+                if(!deviceInfo.regId) {
+                    await maxsmart.send(deviceInfo.sn, deviceInfo.ip, maxsmart.CMD.BIND, maxsmart.makeBindServerPacket('MHM000000000', 'localhost', 5000));
+                }
+                await this.addDeviceToDB(deviceInfo);
+                this.addDevice(deviceInfo);
+                //TODO suggest to disable pairing in config now.
+            }
+        }
+        else {
+            const deviceInfo = await maxsmart.discoverDevices();
+            if(!this.devices.hasOwnProperty(deviceInfo.sn)) {
+                await this.addDeviceToDB(deviceInfo);
+                this.addDevice(deviceInfo);
+            }
+        }
+    }
+
+    async removeDeviceFromDB(device) {
+        const db = new Database(this.packageName);
+        await db.open();
+        this.config.devices.splice(this.config.devices.findIndex((d) => d.sn === device.sn), 1);
+        await db.saveConfig({
+            devices: this.config.devices,
+            pairing: this.config.pairing,
+            wifiInfo: this.config.wifiInfo
+        });
+    }
+
+    async removeThing(device) {
+        await this.removeDeviceFromDB(device);
+        return super.removeThing(device);
+    }
 }
 
 module.exports = (addonManager, manifest, reportError) => {
-    new MaxSmartAdapter(addonManager, manifest.name, manifest.moziot.config);
+    const { config } = manifest.moziot;
+    if(config.pairing && !(config.wifiInfo.ssid && config.wifiInfo.password)) {
+        reportError("Pairing is enabled but no WiFi network is configured");
+    }
+    else {
+        new MaxSmartAdapter(addonManager, manifest.name, config);
+    }
 };
