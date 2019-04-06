@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/freaktechnik/maxsmart2-adapter#readme",
   "dependencies": {
-    "mh-maxsmart2": "^1.2.1"
+    "mh-maxsmart2": "^1.3.0"
   },
   "devDependencies": {
     "nlf": "^2.1.1"
@@ -71,7 +71,7 @@
               "ip": {
                 "type": "string",
                 "description": "IPv4 address",
-                "pattern": "^(?:[0-9]+\\.){3}[0-9]+$"
+                "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
               }
             }
           }

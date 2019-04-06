@@ -176,25 +176,28 @@ class MaxSmartAdapter extends Adapter {
         });
     }
 
-    async startPairing() {
+    async startPairing(timeout = 10000) {
         if(this.config.pairing && this.config.wifiInfo && this.config.wifiInfo.ssid && this.config.wifiInfo.password) {
             await easylink.sendWifiInfo(this.config.wifiInfo.ssid, this.config.wifiInfo.password);
-            const deviceInfo = await maxsmart.discoverDevices();
-            if(!this.devices.hasOwnProperty(deviceInfo.sn)) {
-                if(!deviceInfo.regId) {
-                    await maxsmart.send(deviceInfo.sn, deviceInfo.ip, maxsmart.CMD.BIND, maxsmart.makeBindServerPacket('MHM000000000', 'localhost', 5000));
+            maxsmart.discoverDevices(async (deviceInfo) => {
+                if(!this.devices.hasOwnProperty(deviceInfo.sn) && maxsmart.isMaxSmart2Plug(deviceInfo)) {
+                    if(!deviceInfo.regId) {
+                        const bindPacket = maxsmart.makeBindServerPacket('MHM000000000', 'localhost', 5000);
+                        await maxsmart.send(deviceInfo.sn, deviceInfo.ip, maxsmart.CMD.BIND, bindPacket);
+                    }
+                    await this.addDeviceToDB(deviceInfo);
+                    this.addDevice(deviceInfo);
+                    //TODO suggest to disable pairing in config now.
                 }
-                await this.addDeviceToDB(deviceInfo);
-                this.addDevice(deviceInfo);
-                //TODO suggest to disable pairing in config now.
-            }
+            });
         }
         else {
-            const deviceInfo = await maxsmart.discoverDevices();
-            if(!this.devices.hasOwnProperty(deviceInfo.sn)) {
-                await this.addDeviceToDB(deviceInfo);
-                this.addDevice(deviceInfo);
-            }
+            maxsmart.discoverDevices(async (deviceInfo) => {
+                if(!this.devices.hasOwnProperty(deviceInfo.sn) && maxsmart.isMaxSmart2Plug(deviceInfo)) {
+                    await this.addDeviceToDB(deviceInfo);
+                    this.addDevice(deviceInfo);
+                }
+            }, timeout);
         }
     }
 
