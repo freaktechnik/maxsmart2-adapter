@@ -6,6 +6,7 @@
 const {Adapter, Device, Property, Database} = require('gateway-addon');
 const maxsmart = require("mh-maxsmart2");
 const easylink = require("mh-maxsmart2/easylink");
+const manifest = require("./manifest.json");
 
 class ReadonlyProperty extends Property {
     constructor(device, name, description) {
@@ -19,8 +20,7 @@ class ReadonlyProperty extends Property {
 
     setReadonly(value) {
         if(value !== this.value) {
-            this.setCachedValue(value);
-            this.device.notifyPropertyChanged(this);
+            this.setCachedValueAndNotify(value);
             if(this.value != this.prevSetValue) {
                 this.prevSetValue = this.value;
             }
@@ -32,7 +32,7 @@ class ReadonlyProperty extends Property {
 class Plug extends Device {
     constructor(adapter, desc) {
         super(adapter, desc.sn);
-        this.name = desc.name || desc.sn;
+        this.setTitle(desc.name || desc.sn);
         this.udpDevice = desc;
         this.description = "Max Hauri maxSMART 2.0 clip-clap Switch WiFi";
         this.lastSuccesfulRequest = 0;
@@ -118,8 +118,8 @@ class Plug extends Device {
 }
 
 class MaxSmartAdapter extends Adapter {
-    constructor(addonManager, name, config) {
-        super(addonManager, 'MaxSmart2Adapter', name);
+    constructor(addonManager, config) {
+        super(addonManager, manifest.id, manifest.id);
         addonManager.addAdapter(this);
         this.config = config;
 
@@ -218,12 +218,14 @@ class MaxSmartAdapter extends Adapter {
     }
 }
 
-module.exports = (addonManager, manifest, reportError) => {
-    const { config } = manifest.moziot;
+module.exports = async (addonManager, reportError) => {
+    const db = new Database(manifest.id);
+    await db.open();
+    const config = await db.loadConfig();
     if(config.pairing && !(config.wifiInfo.ssid && config.wifiInfo.password)) {
         reportError("Pairing is enabled but no WiFi network is configured");
     }
     else {
-        new MaxSmartAdapter(addonManager, manifest.name, config);
+        new MaxSmartAdapter(addonManager, config);
     }
 };

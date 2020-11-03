@@ -1,6 +1,5 @@
 {
   "name": "maxsmart2-adapter",
-  "display_name": "Max Hauri maxSMART 2.0",
   "version": "0.0.3",
   "description": "Control Max Hauri Max Smart 2.0 smart plugs. Does not support automatic pairing.",
   "main": "index.js",
@@ -13,13 +12,6 @@
     "type": "git",
     "url": "git+https://github.com/freaktechnik/maxsmart2-adapter.git"
   },
-  "keywords": [
-    "iot",
-    "mozilla-iot",
-    "max",
-    "hauri",
-    "smart"
-  ],
   "author": "Martin Giger",
   "license": "MIT",
   "bugs": {
@@ -32,79 +24,11 @@
   "devDependencies": {
     "nlf": "^2.1.1"
   },
-  "moziot": {
-    "api": {
-      "min": 2,
-      "max": 2
-    },
-    "plugin": true,
-    "exec": "{nodeLoader} {path}",
-    "config": {
-      "devices": [],
-      "pairing": true,
-      "wifiInfo": {
-        "ssid": "",
-        "password": ""
-      }
-    },
-    "schema": {
-      "type": "object",
-      "required": [
-        "devices",
-        "wifiInfo"
-      ],
-      "properties": {
-        "devices": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "sn",
-              "ip"
-            ],
-            "properties": {
-              "sn": {
-                "type": "string",
-                "description": "Serial number",
-                "pattern": "^[A-Z]{3}[0-9]+$"
-              },
-              "ip": {
-                "type": "string",
-                "description": "IPv4 address",
-                "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
-              }
-            }
-          }
-        },
-        "pairing": {
-          "type": "boolean",
-          "title": "Enable WiFi pairing for plugs"
-        },
-        "wifiInfo": {
-          "type": "object",
-          "title": "WiFi configuration",
-          "description": "WiFi config sent to unpaired smart plugs. Readable to anyone, so only enable pairing when needed.",
-          "required": [
-            "ssid",
-            "password"
-          ],
-          "properties": {
-            "ssid": {
-              "type": "string",
-              "description": "WiFi SSID"
-            },
-            "password": {
-              "type": "string",
-              "description": "WiFi password"
-            }
-          }
-        }
-      }
-    }
-  },
   "files": [
+    "manifest.json",
     "index.js",
     "SHA256SUMS",
-    "LICENSE"
+    "LICENSE",
+    "README.md"
   ]
 }

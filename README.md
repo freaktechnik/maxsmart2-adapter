@@ -1,6 +1,6 @@
 # Max Hauri maxSMART 2.0 Adapter
 
-Integrates the Max Hauri maxSMART 2.0 clip-clap Switch WiFi with the Mozilla IoT gateway.
+Integrates the Max Hauri maxSMART 2.0 clip-clap Switch WiFi with the WebthingsIO gateway.
 
 May also support other devices made by Revogi.
 
@@ -11,6 +11,7 @@ The adapter can do the initial WiFi set up for your maxSMART 2.0 plug. Note that
 I also recommend to use the adapter to pair and not the official app, since that will upload your WiFi credentials to a server.
 
 ## Security
+
 - Separate WiFi
 - Block all TCP traffic, only allow local UDP.
 
