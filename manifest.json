@@ -1,0 +1,79 @@
+{
+    "author": "Martin Giger",
+    "description": "Control Max Hauri Max Smart 2.0 smart plugs. Does not support automatic pairing",
+    "gateway_specific_settings": {
+        "exec": "{nodeLoader} {path}",
+        "primary_type": "adapter",
+        "strict_max_version": "*",
+        "strict_min_version": "0.10.0",
+        "config": {
+            "devices": [],
+            "pairing": true,
+            "wifiInfo": {
+                "ssid": "",
+                "password": ""
+            }
+        },
+        "schema": {
+            "type": "object",
+            "required": [
+                "devices",
+                "wifiInfo"
+            ],
+            "properties": {
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "sn",
+                            "ip"
+                        ],
+                        "properties": {
+                            "sn": {
+                                "type": "string",
+                                "description": "Serial number",
+                                "pattern": "^[A-Z]{3}[0-9]+$"
+                            },
+                            "ip": {
+                                "type": "string",
+                                "description": "IPv4 address",
+                                "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+                            }
+                        }
+                    }
+                },
+                "pairing": {
+                    "type": "boolean",
+                    "title": "Enable WiFi pairing for plugs"
+                },
+                "wifiInfo": {
+                    "type": "object",
+                    "title": "WiFi configuration",
+                    "description": "WiFi config sent to unpaired smart plugs. Readable to anyone, so only enable pairing when needed.",
+                    "required": [
+                        "ssid",
+                        "password"
+                    ],
+                    "properties": {
+                        "ssid": {
+                        "type": "string",
+                        "description": "WiFi SSID"
+                        },
+                        "password": {
+                        "type": "string",
+                        "description": "WiFi password"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "homepage_url": "https://github.com/freaktechnik/maxsmart2-adapter#readme",
+    "id": "maxsmart2-adapter",
+    "license": "MIT",
+    "manifest_version": 1,
+    "name": "Max Hauri maxSMART 2.0",
+    "short_name": "maxSMART 2.0",
+    "version": "0.0.4"
+}
