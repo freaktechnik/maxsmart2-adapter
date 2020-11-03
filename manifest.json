@@ -2,11 +2,22 @@
     "author": "Martin Giger",
     "description": "Control Max Hauri Max Smart 2.0 smart plugs. Does not support automatic pairing",
     "gateway_specific_settings": {
-        "exec": "{nodeLoader} {path}",
-        "primary_type": "adapter",
-        "strict_max_version": "*",
-        "strict_min_version": "0.10.0",
-        "config": {
+        "webthings": {
+            "exec": "{nodeLoader} {path}",
+            "primary_type": "adapter",
+            "strict_max_version": "*",
+            "strict_min_version": "0.10.0"
+        }
+    },
+    "homepage_url": "https://github.com/freaktechnik/maxsmart2-adapter#readme",
+    "id": "maxsmart2-adapter",
+    "license": "MIT",
+    "manifest_version": 1,
+    "name": "Max Hauri maxSMART 2.0",
+    "short_name": "maxSMART 2.0",
+    "version": "0.0.4",
+    "options": {
+        "default": {
             "devices": [],
             "pairing": true,
             "wifiInfo": {
@@ -17,8 +28,7 @@
         "schema": {
             "type": "object",
             "required": [
-                "devices",
-                "wifiInfo"
+                "devices"
             ],
             "properties": {
                 "devices": {
@@ -51,29 +61,19 @@
                     "type": "object",
                     "title": "WiFi configuration",
                     "description": "WiFi config sent to unpaired smart plugs. Readable to anyone, so only enable pairing when needed.",
-                    "required": [
-                        "ssid",
-                        "password"
-                    ],
+                    "required": [],
                     "properties": {
                         "ssid": {
-                        "type": "string",
-                        "description": "WiFi SSID"
+                            "type": "string",
+                            "description": "WiFi SSID"
                         },
                         "password": {
-                        "type": "string",
-                        "description": "WiFi password"
+                            "type": "string",
+                            "description": "WiFi password"
                         }
                     }
                 }
             }
         }
-    },
-    "homepage_url": "https://github.com/freaktechnik/maxsmart2-adapter#readme",
-    "id": "maxsmart2-adapter",
-    "license": "MIT",
-    "manifest_version": 1,
-    "name": "Max Hauri maxSMART 2.0",
-    "short_name": "maxSMART 2.0",
-    "version": "0.0.4"
+    }
 }
