@@ -122,6 +122,7 @@ class MaxSmartAdapter extends Adapter {
         super(addonManager, manifest.id, manifest.id);
         addonManager.addAdapter(this);
         this.config = config;
+        config.devices = config.devices || [];
 
         for(const device of config.devices) {
             this.addDevice(device);
