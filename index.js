@@ -82,20 +82,7 @@ class Plug extends Device {
 
     handleRequestError(e) {
         if(e.code === 0) {
-            if(this.destroyed) {
-                throw new Error("Device already gone");
-            }
-            this.adapter.removeThing(this);
-            this.destroyed = true;
-            setTimeout(() => {
-                this.udpSend(maxsmart.CMD.GET_WATT).then(() => {
-                    this.destroyed = false;
-                    this.adapter.addDevice(this.udpDevice);
-                }).catch(() => {
-                    console.error("Lost connection to", this.sn);
-                });
-            }, 60000);
-            throw e;
+            this.connectedNotify(false);
         }
         else {
             console.error(e);
@@ -103,10 +90,12 @@ class Plug extends Device {
     }
 
     async update() {
-        //TODO broke power readings with the pairing stuff :(
         const res = await this.udpSend(maxsmart.CMD.GET_WATT);
         this.findProperty('watt').setReadonly(res.watt);
         this.findProperty('amp').setReadonly(res.amp);
+        if(res.watt > 0) {
+            this.findProperty('on').setCachedValueAndNotify(true);
+        }
     }
 
     async notifyPropertyChanged(property) {
@@ -131,7 +120,8 @@ class MaxSmartAdapter extends Adapter {
 
     addDevice(desc) {
         if(desc.sn in this.devices) {
-            console.warn("Device already exists", desc.sn);
+            this.devices[desc.sn].connectedNotify(true);
+            this.devices[desc.sn].udpDevice = desc;
             return;
         }
         const device = new Plug(this, desc);
