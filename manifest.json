@@ -15,7 +15,7 @@
     "manifest_version": 1,
     "name": "Max Hauri maxSMART 2.0",
     "short_name": "maxSMART 2.0",
-    "version": "0.0.4",
+    "version": "0.1.0",
     "options": {
         "default": {
             "devices": [],
