@@ -91,6 +91,7 @@ class Plug extends Device {
 
     async update() {
         const res = await this.udpSend(maxsmart.CMD.GET_WATT);
+        this.connectedNotify(true);
         this.findProperty('watt').setReadonly(res.watt);
         this.findProperty('amp').setReadonly(res.amp);
         if(res.watt > 0) {
@@ -171,21 +172,25 @@ class MaxSmartAdapter extends Adapter {
         if(this.config.pairing && this.config.wifiInfo && this.config.wifiInfo.ssid && this.config.wifiInfo.password) {
             await easylink.sendWifiInfo(this.config.wifiInfo.ssid, this.config.wifiInfo.password);
             maxsmart.discoverDevices(async (deviceInfo) => {
-                if(!this.devices.hasOwnProperty(deviceInfo.sn) && maxsmart.isMaxSmart2Plug(deviceInfo)) {
-                    if(!deviceInfo.regId) {
-                        const bindPacket = maxsmart.makeBindServerPacket('MHM000000000', 'localhost', 5000);
-                        await maxsmart.send(deviceInfo.sn, deviceInfo.ip, maxsmart.CMD.BIND, bindPacket);
+                if(maxsmart.isMaxSmart2Plug(deviceInfo)) {
+                    if(!this.devices.hasOwnProperty(deviceInfo.sn)) {
+                        if(!deviceInfo.regId) {
+                            const bindPacket = maxsmart.makeBindServerPacket('MHM000000000', 'localhost', 5000);
+                            await maxsmart.send(deviceInfo.sn, deviceInfo.ip, maxsmart.CMD.BIND, bindPacket);
+                        }
+                        await this.addDeviceToDB(deviceInfo);
                     }
-                    await this.addDeviceToDB(deviceInfo);
                     this.addDevice(deviceInfo);
-                    //TODO suggest to disable pairing in config now.
+                    this.sendPairingPrompt('If all maxSMART plugs are now listed, disable WiFi pairing in the adapter settings');
                 }
             });
         }
         else {
             maxsmart.discoverDevices(async (deviceInfo) => {
-                if(!this.devices.hasOwnProperty(deviceInfo.sn) && maxsmart.isMaxSmart2Plug(deviceInfo)) {
-                    await this.addDeviceToDB(deviceInfo);
+                if(maxsmart.isMaxSmart2Plug(deviceInfo)) {
+                    if(!this.devices.hasOwnProperty(deviceInfo.sn)) {
+                        await this.addDeviceToDB(deviceInfo);
+                    }
                     this.addDevice(deviceInfo);
                 }
             }, timeout);

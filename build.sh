@@ -1,19 +1,15 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-rm -rf *.tgz package/
+rm -rf node_modules
+npm install --production --no-audit
+rm -rf node_modules/.bin
+
 TARFILE=$(npm pack)
 tar xzf ${TARFILE}
-npm ci --ignore-scripts
-npm run licenses
-cd package
-sha256sum LICENSE README.md > SHA256SUMS
-cd ..
-sha256sum manifest.json package.json index.js >> package/SHA256SUMS
-rm -rf node_modules
-npm ci --production --ignore-scripts
-find node_modules -type f -exec sha256sum {} \; >> package/SHA256SUMS
 cp -r node_modules ./package
+pushd package
+find . -type f -exec shasum --algorithm 256 {} \; >> SHA256SUMS
+popd
 tar czf ${TARFILE} package
+shasum --algorithm 256 ${TARFILE} > ${TARFILE}.sha256sum
 rm -rf package
-sha256sum ${TARFILE}
-echo "Created ${TARFILE}"
