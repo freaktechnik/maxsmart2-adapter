@@ -92,6 +92,9 @@ class Plug extends Device {
     async update() {
         const res = await this.udpSend(maxsmart.CMD.GET_WATT);
         this.connectedNotify(true);
+        if(!res) {
+            return;
+        }
         this.findProperty('watt').setReadonly(res.watt);
         this.findProperty('amp').setReadonly(res.amp);
         if(res.watt > 0) {
